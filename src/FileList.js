@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-function ItemList() {
-  // 设置状态来存储API返回的数据
-
-}
 
 export default FilterableFileList;
 
@@ -25,6 +21,16 @@ function FilterableFileList() {
 
 
 function SearchBar({ filterText, onFilterTextChange }) {
+  return (
+    <form>
+      <input
+        type="text"
+        placeholder="Search..."
+        value={filterText}
+        onChange={(e) => onFilterTextChange(e.target.value)}
+      />
+    </form>
+  );
 }
 
 
@@ -76,16 +82,44 @@ function FileList({ filterText }) {
       return;
     }
     filteredFiles.push(
-      <p>
-        {file.name}
-      </p>
-    );
+      <li key={file.id}>{file.name}<FileDownloadButton target={file}></FileDownloadButton></li>)
+      
   }
   );
   return (
     <div>
       <h2>File List</h2>
-      {filteredFiles}
+      <ul>{filteredFiles}</ul>
     </div>
   );
+}
+
+function FileDownloadButton({ target }) {
+  const handleDownload = async () => {
+    try {
+      const input = 'api/files/download/'.concat(target.name)
+      const response = await fetch(input, {
+        method: 'GET',
+      })
+
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
+
+      const blob = await response.blob();
+
+      // 创建一个临时的下载链接
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);  // 使用 Blob 创建临时 URL
+      link.download = target.name;  // 设置下载文件的名称
+      link.click();  // 自动触发下载
+    } catch (error) {
+      console.error('下载失败:', error);
+    }
+  };
+
+  return (
+    <button onClick={handleDownload}>Click to download</button>
+  )
+
 }
